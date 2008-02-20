@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+ * Copyright (C) 2007 Google Inc.
+ *
+ * Author: Wei-Hwa Huang
+ -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	
+	<com.google.android.games.tubes.GridView
+		id="@+id/grid"
+		android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                />
+	
+	<RelativeLayout
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent" >
+		
+		<TextView
+			id="@+id/text"
+			android:text="@string/grid_layout_text_text"
+			android:visibility="visible"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_centerInParent="true"
+			android:textAlign="center"
+			android:textColor="#ff8888ff"
+			android:textSize="24sp"/>
+	</RelativeLayout>
+</FrameLayout>

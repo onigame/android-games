@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Tubes</string>
+  <string name="mode_ready">Tubes\nPress Button To Play</string>
+  <string name="mode_pause">Paused\nPress Button To Resume</string>
+  <string name="mode_gameover_prefix">You win!\nScore: ?</string>
+  <string name="mode_gameover_suffix">\nPress Button To Play Again</string>
+  <string name="grid_layout_text_text"></string>
+</resources>
