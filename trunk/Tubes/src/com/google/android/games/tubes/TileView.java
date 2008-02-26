@@ -21,10 +21,10 @@ import android.content.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TableRow;
 
 import java.util.Map;
 
@@ -33,7 +33,7 @@ import java.util.Map;
  * drawables.
  * 
  */
-public class TileView extends View {
+public class TileView extends ViewGroup {
 
     /**
      * Parameters controlling the size of the tiles and their range within view.
@@ -41,13 +41,11 @@ public class TileView extends View {
      * dimensions. X/Y Tile Counts are the number of tiles that will be drawn.
      */
 
-    protected static int mTileSize;
+    protected int mTileSize;
+    protected final static int NO_TILE = 0;
 
     protected static int mXTileCount;
     protected static int mYTileCount;
-
-    private static int mXOffset;
-    private static int mYOffset;
 
 
     /**
@@ -60,31 +58,17 @@ public class TileView extends View {
      * A two-dimensional array of integers in which the number represents the
      * index of the tile that should be drawn at that locations
      */
-    private int[][] mTileGrid;
-    private int[][] mBackgroundTileGrid;
-
-    private final Paint mPaint = new Paint();
-
-    public TileView(Context context, AttributeSet attrs, Map inflateParams,
-            int defStyle) {
-        super(context, attrs, inflateParams, defStyle);
-        Resources.StyledAttributes a = context.obtainStyledAttributes(attrs,
-                R.styleable.TileView);
-        mXTileCount = 5;
-        mYTileCount = 5;
-        mTileSize = 44;
-    }
-
+    private SingleTileView[][] mChildrenViews;
+    
     public TileView(Context context, AttributeSet attrs, Map inflateParams) {
         super(context, attrs, inflateParams);
-        Resources.StyledAttributes a = context.obtainStyledAttributes(attrs,
-                R.styleable.TileView);
-        mXTileCount = 5;
-        mYTileCount = 5;
+        mXTileCount = 1;
+        mYTileCount = 1;
         mTileSize = 44;
-    }
-
-    
+        resetTiles(1);
+        mChildrenViews = new SingleTileView[1][1];
+        mChildrenViews[0][0] = new SingleTileView(getContext(), mTileSize);
+    } 
     
     /**
      * Rests the internal array of Bitmaps used for drawing tiles, and
@@ -95,21 +79,40 @@ public class TileView extends View {
     
     public void resetTiles(int tilecount) {
     	mTileArray = new Bitmap[tilecount];
+    	mTileArray[0] = null;
     }
 
+    /**
+     * Sets up the View to have the right number of children
+     */
+    public void initializeGrid (int xCount, int yCount) {
+        mXTileCount = xCount;
+        mYTileCount = yCount;
+        
+    	int max_height = (int) Math.floor(this.getHeight() / mYTileCount);
+        int max_width = (int) Math.floor(this.getWidth() / mXTileCount);
+    	mTileSize = Math.max(1,Math.min(max_height, max_width));
+        
+        mChildrenViews = new SingleTileView[mXTileCount][mYTileCount];
+    	for (int y=0; y<mYTileCount; ++y) {
+            for (int x=0; x<mXTileCount; ++x) {
+               	mChildrenViews[x][y] = new SingleTileView(getContext(), mTileSize);
+               	this.addView(mChildrenViews[x][y]);
+            }
+        }    	
+    }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
     	int max_height = (int) Math.floor(h / mYTileCount);
     	int max_width = (int) Math.floor(w / mXTileCount);
     	mTileSize = Math.max(1,Math.min(max_height, max_width));
-    	
-        mXOffset = ((w - (mTileSize * mXTileCount)) / 2);
-        mYOffset = ((h - (mTileSize * mYTileCount)) / 2);
-
-        mTileGrid = new int[mXTileCount][mYTileCount];
-        mBackgroundTileGrid = new int[mXTileCount][mYTileCount];
-        clearTiles();
+    	       
+    	for (int y=0; y<mYTileCount; ++y) {
+             for (int x=0; x<mXTileCount; ++x) {
+               	mChildrenViews[x][y].mTileSize = mTileSize;
+            }
+        }    	        
     }
 
     /**
@@ -135,8 +138,14 @@ public class TileView extends View {
     public void clearTiles() {
         for (int x = 0; x < mXTileCount; x++) {
             for (int y = 0; y < mYTileCount; y++) {
-                setTile(0, x, y);
+                try {
+					setTile(0, x, y);
+				} catch (AnimationProgressException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
                 setBackgroundTile(0, x, y);
+                setOverlayTile(0, x, y);
             }
         }
     }
@@ -149,9 +158,10 @@ public class TileView extends View {
      * @param tileindex
      * @param x
      * @param y
+     * @throws AnimationProgressException 
      */
-    public void setTile(int tileindex, int x, int y) {
-        mTileGrid[x][y] = tileindex;
+    public void setTile(int tileindex, int x, int y) throws AnimationProgressException {
+    	this.mChildrenViews[x][y].setForeground(mTileArray[tileindex]);
     }
     
     /**
@@ -164,34 +174,50 @@ public class TileView extends View {
      * @param y
      */
     public void setBackgroundTile(int tileindex, int x, int y) {
-        mBackgroundTileGrid[x][y] = tileindex;
+    	this.mChildrenViews[x][y].setBackground(mTileArray[tileindex]);
+    }
+    
+    /**
+     * Used to indicate that a particular tile (set with loadTile and referenced
+     * by an integer) should be drawn at the given x/y coordinates during the
+     * next invalidate/draw cycle.
+     * 
+     * @param tileindex
+     * @param x
+     * @param y
+     */
+    public void setOverlayTile(int tileindex, int x, int y) {
+    	this.mChildrenViews[x][y].setOverlay(mTileArray[tileindex]);
     }
 
 
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        for (int x = 0; x < mXTileCount; x += 1) {
-            for (int y = 0; y < mYTileCount; y += 1) {
-                if (mBackgroundTileGrid[x][y] > 0) {
-                	Rect r = new Rect(mXOffset + x * mTileSize,
-                			mYOffset + y * mTileSize,
-                			mXOffset + (x+1) * mTileSize,
-                			mYOffset + (y+1) * mTileSize);
-                    canvas.drawBitmap(mTileArray[mBackgroundTileGrid[x][y]], 
-                    		null, r, mPaint);
-                }
-                if (mTileGrid[x][y] > 0) {
-                	Rect r = new Rect(mXOffset + x * mTileSize,
-                			mYOffset + y * mTileSize,
-                			mXOffset + (x+1) * mTileSize,
-                			mYOffset + (y+1) * mTileSize);
-                    canvas.drawBitmap(mTileArray[mTileGrid[x][y]], 
-                    		null, r, mPaint);
-                }
-            }
-        }
-
     }
 
+	@Override
+	protected void onLayout(boolean changed, int wleft, int wtop, int left, int top, int right,
+			int bottom) {
+    	int height = bottom - top;
+    	int width = right - left;
+    	int startX = (height > width) ? 0 : ((width - height) / 2);
+    	int startY = (width > height) ? 0 : ((height - width) / 2);
+    	
+    	for (int y=0; y<mYTileCount; ++y) {
+            for (int x=0; x<mXTileCount; ++x) {
+               	mChildrenViews[x][y].layout(
+               		wleft + startX + mTileSize * x,
+               		wtop + startY + mTileSize * y,
+               		startX + mTileSize * x,
+               		startY + mTileSize * y,
+               		startX + mTileSize * (x+1),
+               		startY + mTileSize * (y+1));
+            }
+        }    	
+	}
+
+	protected void rotateTile(int tileindex, int x, int y) {
+		this.mChildrenViews[x][y].rotateToNewForeground(mTileArray[tileindex]);
+	}
 }
