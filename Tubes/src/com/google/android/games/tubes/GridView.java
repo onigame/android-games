@@ -18,6 +18,12 @@ import android.util.AttributeSet;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 /**
@@ -41,8 +47,8 @@ public class GridView extends TileView {
     /**
      * Cursor Location.
      */
-    private Coordinate cursor;
-    
+    private Coordinate mCursor;
+       
     private static final int NORTH = 1;
     private static final int SOUTH = 2;
     private static final int EAST = 3;
@@ -96,9 +102,10 @@ public class GridView extends TileView {
     private boolean mWrapVert;
     
     /**
-     * Cursor image.
+     * Cursor image and computer image indices.
      */
     private static final int CURSOR_IMAGE = 16;
+    private static final int COMPUTER_IMAGE = 32;
     
     /**
      * Offset to make network happy.
@@ -138,18 +145,13 @@ public class GridView extends TileView {
         initGridView();
    }
 
-    public GridView(Context context, AttributeSet attrs, Map inflateParams,
-    		int defStyle) {
-    	super(context, attrs, inflateParams, defStyle);
-    	initGridView();
-    }
-
     private void initGridView() {
         setFocusable(true);
 
         Resources r = this.getContext().getResources();
         
-        resetTiles(32);
+        resetTiles(33);
+        loadTile(COMPUTER_IMAGE, r.getDrawable(R.drawable.computer));
         loadTile(1, r.getDrawable(R.drawable.pipe1));
         loadTile(2, r.getDrawable(R.drawable.pipe2));
         loadTile(3, r.getDrawable(R.drawable.pipe3));
@@ -181,11 +183,11 @@ public class GridView extends TileView {
         loadTile(HAPPY_OFFSET + 13, r.getDrawable(R.drawable.pipeg13));
         loadTile(HAPPY_OFFSET + 14, r.getDrawable(R.drawable.pipeg14));
         loadTile(HAPPY_OFFSET + 15, r.getDrawable(R.drawable.pipeg15));
-       
+        
     }
     
     private void initNewGame() {
-        this.cursor = new Coordinate(0,0);
+        this.mCursor = new Coordinate(0,0);
         resetPuzzleData();
     }
 
@@ -224,6 +226,8 @@ public class GridView extends TileView {
                  * At the beginning of the game, or the end of a previous one,
                  * we should start a new game.
                  */
+            	clearTiles();
+            	initializeGrid(5,5);
                 initNewGame();
                 setMode(RUNNING);
                 update();
@@ -253,22 +257,22 @@ public class GridView extends TileView {
         }
         
     	if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            this.cursor.move(NORTH);
+            this.mCursor.move(NORTH);
             return (true);
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-            this.cursor.move(SOUTH);
+            this.mCursor.move(SOUTH);
             return (true);
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-            this.cursor.move(WEST);
+            this.mCursor.move(WEST);
             return (true);
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-        	this.cursor.move(EAST);
+        	this.mCursor.move(EAST);
             return (true);
         }
 
@@ -327,7 +331,6 @@ public class GridView extends TileView {
             long now = System.currentTimeMillis();
 
             if (now - mLastMove > mMoveDelay) {
-                clearTiles();
                 updateGrid();
                 mLastMove = now;
             }
@@ -343,10 +346,17 @@ public class GridView extends TileView {
     private void updateGrid() {
     	for (int x = 0; x < mXTileCount; x++) {
     		for (int y = 0; y < mYTileCount; y++) {
-    			setTile(mPipeType[x][y] + (mPipeHappy[x][y] ? HAPPY_OFFSET : 0), x, y);
+    			setBackgroundTile(NO_TILE, x, y);
+    			try {
+					setTile(mPipeType[x][y] + (mPipeHappy[x][y] ? HAPPY_OFFSET : 0), x, y);
+				} catch (AnimationProgressException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
     		}
     	}
-		setBackgroundTile(16, cursor.x, cursor.y);
+		setBackgroundTile(CURSOR_IMAGE, mCursor.x, mCursor.y);
+		setOverlayTile(COMPUTER_IMAGE, mStarter.x, mStarter.y);
     }
 
     /**
@@ -480,7 +490,9 @@ public class GridView extends TileView {
      * Rotates the object at the current cursor location.
      */
     private void rotatePipeAtCursor() {
-    	mPipeType[cursor.x][cursor.y] = rotate(mPipeType[cursor.x][cursor.y]);
+    	int newType = rotate(mPipeType[mCursor.x][mCursor.y]);
+    	rotateTile(newType, mCursor.x, mCursor.y);
+    	mPipeType[mCursor.x][mCursor.y] = newType;
     }
     
     private void testWest(int x1, int y1, int x2, int y2) {
@@ -547,4 +559,6 @@ public class GridView extends TileView {
     	mPipeHappy = new boolean[mXTileCount][mYTileCount];
     	recurseHappiness(mStarter.x, mStarter.y);
     }    
+    
+    
 }

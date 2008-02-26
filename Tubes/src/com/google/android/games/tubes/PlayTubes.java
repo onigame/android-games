@@ -3,14 +3,19 @@ package com.google.android.games.tubes;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
+import android.view.Menu;
+import android.view.Menu.Item;
 import android.view.Window;
+import android.view.animation.*;
 
 public class PlayTubes extends Activity {
 	
 	private GridView mGridView;
-	
 	private static String ICICLE_KEY = "tubes-grid-view";
-	
+    public static final int INSERT_ID = Menu.FIRST;
+    
+    private Item mOptions;
+    
     /** Called when the activity is first created.
      * Turns off the title bar, sets up the content views,
      * and fires up the GridView.
@@ -39,8 +44,16 @@ public class PlayTubes extends Activity {
             	mGridView.setMode(GridView.PAUSE);
             }
         }
+                
     }
 
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean result = super.onCreateOptionsMenu(menu);
+        mOptions = menu.add(0, INSERT_ID, R.string.menu_string_options);
+        return result;
+    }
+    
     @Override
     protected void onPause() {
         super.onPause();
@@ -53,4 +66,16 @@ public class PlayTubes extends Activity {
         //Store the game state
         outState.putBundle(ICICLE_KEY, mGridView.saveState());
     }
+
+	@Override
+	public boolean onOptionsItemSelected(Item item) {
+		if (item == mOptions) {
+   		 	new TubesOptionsDialog(this).show();		
+			return true;
+		} else {
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+    
 }

@@ -6,4 +6,5 @@
   <string name="mode_gameover_prefix">You win!\nScore: ?</string>
   <string name="mode_gameover_suffix">\nPress Button To Play Again</string>
   <string name="grid_layout_text_text"></string>
+  <string name="menu_string_options">Options...</string>
 </resources>
