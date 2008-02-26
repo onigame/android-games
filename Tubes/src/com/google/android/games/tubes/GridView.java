@@ -18,12 +18,6 @@ import android.util.AttributeSet;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 /**
@@ -227,7 +221,7 @@ public class GridView extends TileView {
                  * we should start a new game.
                  */
             	clearTiles();
-            	initializeGrid(5,5);
+            	initializeGrid(7,7);
                 initNewGame();
                 setMode(RUNNING);
                 update();
@@ -257,21 +251,25 @@ public class GridView extends TileView {
         }
         
     	if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+    		if (mMode != RUNNING) return (true);
             this.mCursor.move(NORTH);
             return (true);
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+    		if (mMode != RUNNING) return (true);
             this.mCursor.move(SOUTH);
             return (true);
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+    		if (mMode != RUNNING) return (true);
             this.mCursor.move(WEST);
             return (true);
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+    		if (mMode != RUNNING) return (true);
         	this.mCursor.move(EAST);
             return (true);
         }
