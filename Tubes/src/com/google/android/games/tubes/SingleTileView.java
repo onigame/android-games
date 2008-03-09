@@ -35,13 +35,12 @@ public class SingleTileView extends View {
 	private Bitmap mForeground;
 	private Bitmap mOverlay;
 	
-	
 	private RotationListener mRotationListener;
-	private Bitmap mFutureForeground;
     private RotateAnimation mRotate;
     private AnimationSet mTotalAnimation;
-	private int mTimesToRotate = 0;
+	private int mTimesToRotate;
 	private final static int mRotationTime = 500;
+	private RotationCompletedListener mRotationCompletedListener;
 
     public int mTileSize;
 
@@ -53,6 +52,7 @@ public class SingleTileView extends View {
         mBackground = null;
         mForeground = null;
         mOverlay = null;
+        mTimesToRotate = 0;
         setLayoutParams(new LayoutParams(mTileSize, mTileSize));
     }
     
@@ -60,10 +60,7 @@ public class SingleTileView extends View {
     	mBackground = b;
     }
     
-    public void setForeground(Bitmap b) throws AnimationProgressException {
-    	if (mTimesToRotate != 0) {
-    		throw new AnimationProgressException();
-    	}
+    public void setForeground(Bitmap b) {
     	mForeground = b;
     }
     
@@ -88,8 +85,8 @@ public class SingleTileView extends View {
         }
     }
 
-    synchronized public void rotateToNewForeground(Bitmap foreground) {
-		mFutureForeground = foreground;
+    synchronized public void rotateClockwise(RotationCompletedListener r) {
+		mRotationCompletedListener = r;
 		mTimesToRotate++;
     	if (mTimesToRotate != 1) {
     		mTotalAnimation.addAnimation(mRotate);
@@ -111,17 +108,20 @@ public class SingleTileView extends View {
     		startAnimation(mTotalAnimation);
     	}
     }
+    
+	protected interface RotationCompletedListener {
+		abstract public void rotationCompleted(int numRotations);
+	}
+	
         
     private class RotationListener implements AnimationListener {
-
-    	private SingleTileView mParent;
-      	
     	public RotationListener() {
     	}
     	
 		synchronized public void onAnimationEnd() {
+			int temp = mTimesToRotate;
 			mTimesToRotate = 0;
-			mForeground = mFutureForeground;
+			mRotationCompletedListener.rotationCompleted(temp);
 		}
 
 		public void onAnimationRepeat() {

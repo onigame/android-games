@@ -17,16 +17,15 @@
 package com.google.android.games.tubes;
 
 import android.content.Context;
-import android.content.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
-import android.widget.TableRow;
 
 import java.util.Map;
+
+import com.google.android.games.tubes.SingleTileView.RotationCompletedListener;
 
 /**
  * TileView: a View-variant designed for handling arrays of "icons" or other
@@ -60,7 +59,7 @@ public class TileView extends ViewGroup {
      */
     private SingleTileView[][] mChildrenViews;
     
-    public TileView(Context context, AttributeSet attrs, Map inflateParams) {
+    public TileView(Context context, AttributeSet attrs, Map<Integer, Integer> inflateParams) {
         super(context, attrs, inflateParams);
         mXTileCount = 1;
         mYTileCount = 1;
@@ -138,12 +137,7 @@ public class TileView extends ViewGroup {
     public void clearTiles() {
         for (int x = 0; x < mXTileCount; x++) {
             for (int y = 0; y < mYTileCount; y++) {
-                try {
-					setTile(0, x, y);
-				} catch (AnimationProgressException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				setTile(0, x, y);
                 setBackgroundTile(0, x, y);
                 setOverlayTile(0, x, y);
             }
@@ -160,7 +154,7 @@ public class TileView extends ViewGroup {
      * @param y
      * @throws AnimationProgressException 
      */
-    public void setTile(int tileindex, int x, int y) throws AnimationProgressException {
+    public void setTile(int tileindex, int x, int y) {
     	this.mChildrenViews[x][y].setForeground(mTileArray[tileindex]);
     }
     
@@ -197,18 +191,15 @@ public class TileView extends ViewGroup {
     }
 
 	@Override
-	protected void onLayout(boolean changed, int wleft, int wtop, int left, int top, int right,
-			int bottom) {
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     	int height = bottom - top;
     	int width = right - left;
-    	int startX = (height > width) ? 0 : ((width - height) / 2);
-    	int startY = (width > height) ? 0 : ((height - width) / 2);
+    	int startX = ((width - mXTileCount * mTileSize) / 2);
+    	int startY = ((height - mYTileCount * mTileSize) / 2);
     	
     	for (int y=0; y<mYTileCount; ++y) {
             for (int x=0; x<mXTileCount; ++x) {
                	mChildrenViews[x][y].layout(
-               		wleft + startX + mTileSize * x,
-               		wtop + startY + mTileSize * y,
                		startX + mTileSize * x,
                		startY + mTileSize * y,
                		startX + mTileSize * (x+1),
@@ -217,7 +208,7 @@ public class TileView extends ViewGroup {
         }    	
 	}
 
-	protected void rotateTile(int tileindex, int x, int y) {
-		this.mChildrenViews[x][y].rotateToNewForeground(mTileArray[tileindex]);
+	protected void rotateTile(int x, int y, RotationCompletedListener r) {
+		this.mChildrenViews[x][y].rotateClockwise(r);
 	}
 }

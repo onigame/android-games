@@ -2,11 +2,9 @@ package com.google.android.games.tubes;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.widget.TextView;
 import android.view.Menu;
 import android.view.Menu.Item;
 import android.view.Window;
-import android.view.animation.*;
 
 public class PlayTubes extends Activity {
 	
@@ -15,6 +13,9 @@ public class PlayTubes extends Activity {
     public static final int INSERT_ID = Menu.FIRST;
     
     private Item mOptions;
+    private Item mNewGame;
+    
+    private GameState mGameState;
     
     /** Called when the activity is first created.
      * Turns off the title bar, sets up the content views,
@@ -30,16 +31,17 @@ public class PlayTubes extends Activity {
         setContentView(R.layout.grid_layout);
 
         mGridView = (GridView) findViewById(R.id.grid);
-        mGridView.setTextView((TextView) findViewById(R.id.text));
 
         if (icicle == null) {
             // We were just launched -- set up a new game
-        	mGridView.setMode(GridView.READY);
+        	mGameState = new GameState();
+        	new NewGameDialog(this, mGameState, mGridView).show();
         } else {
             // We are being restored
             Bundle map = icicle.getBundle(ICICLE_KEY);
             if (map != null) {
             	mGridView.restoreState(map);
+            	mGameState = mGridView.getGameState();
             } else {
             	mGridView.setMode(GridView.PAUSE);
             }
@@ -50,7 +52,8 @@ public class PlayTubes extends Activity {
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
-        mOptions = menu.add(0, INSERT_ID, R.string.menu_string_options);
+        mOptions = menu.add(0, INSERT_ID, "New Game...");
+        mNewGame = menu.add(1, INSERT_ID, "Options...");
         return result;
     }
     
@@ -70,7 +73,7 @@ public class PlayTubes extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(Item item) {
 		if (item == mOptions) {
-   		 	new TubesOptionsDialog(this).show();		
+   		 	new NewGameDialog(this, mGameState, mGridView).show();		
 			return true;
 		} else {
 			return super.onOptionsItemSelected(item);
