@@ -9,16 +9,19 @@ package com.google.android.games.tubes;
 import java.util.Map;
 import java.util.Random;
 import java.util.HashSet;
+import java.util.ArrayList;
+
+import com.google.android.games.tubes.SingleTileView.RotationCompletedListener;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.View;
-import android.widget.TextView;
+import android.app.AlertDialog.Builder;
 
 /**
  * GridView: implementation of a simple game of Series of Tubes
@@ -27,6 +30,8 @@ import android.widget.TextView;
  */
 public class GridView extends TileView {
 
+	private GameState mGameState;
+	
     /**
      * Current mode of application: READY to run, RUNNING, or you have already
      * lost. static final ints are used instead of an enum for performance
@@ -58,11 +63,6 @@ public class GridView extends TileView {
      * to determine if a move should be made based on mMoveDelay.
      */
     private long mLastMove;
-    
-    /**
-     * mStatusText: text shows to the user in some run states
-     */
-    private TextView mStatusText;
     
     /**
      * A two-dimensional array of integers in which the number represents the
@@ -134,7 +134,7 @@ public class GridView extends TileView {
      * @param attrs
      * @param inflateParams
      */
-    public GridView(Context context, AttributeSet attrs, Map inflateParams) {
+    public GridView(Context context, AttributeSet attrs, Map<Integer, Integer> inflateParams) {
         super(context, attrs, inflateParams);
         initGridView();
    }
@@ -180,9 +180,14 @@ public class GridView extends TileView {
         
     }
     
-    private void initNewGame() {
-        this.mCursor = new Coordinate(0,0);
-        resetPuzzleData();
+    public void initNewGame(GameState gs) {
+    	clearTiles();
+    	mGameState = gs;
+    	initializeGrid(mGameState.getWidth(),mGameState.getHeight());
+    	mCursor = new Coordinate(0,0);
+    	resetPuzzleData();
+        setMode(RUNNING);
+        update();    		    	
     }
 
     /**
@@ -205,6 +210,19 @@ public class GridView extends TileView {
     public void restoreState(Bundle icicle) {
         setMode(PAUSE);
     }
+    
+    public DialogInterface.OnClickListener mStartNewGameListener = new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface arg0, int arg1) {
+            initNewGame(mGameState);
+		}
+    };
+
+    public DialogInterface.OnClickListener mUnPauseListener = new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface arg0, int arg1) {
+            setMode(RUNNING);
+            update();    		
+		}
+    };
 
     /*
      * handles key events in the game.
@@ -215,39 +233,8 @@ public class GridView extends TileView {
     public boolean onKeyDown(int keyCode, KeyEvent msg) {
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-            if (mMode == READY | mMode == GAMEOVER) {
-                /*
-                 * At the beginning of the game, or the end of a previous one,
-                 * we should start a new game.
-                 */
-            	clearTiles();
-            	initializeGrid(7,7);
-                initNewGame();
-                setMode(RUNNING);
-                update();
-                return (true);
-            }
-
-            if (mMode == PAUSE) {
-                /*
-                 * If the game is merely paused, we should just continue where
-                 * we left off.
-                 */
-                setMode(RUNNING);
-                update();
-                return (true);
-            }
-            
-            if (mMode == RUNNING) {
-            	rotatePipeAtCursor();
-            	calculateHappiness();
-            	if (mHappyCount == mXTileCount * mYTileCount) {
-                    clearTiles();
-                    updateGrid();
-            		setMode(GAMEOVER);
-            	}
-            	return (true);
-            }
+           	rotatePipeAtCursor();
+           	return (true);
         }
         
     	if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
@@ -277,15 +264,6 @@ public class GridView extends TileView {
         return super.onKeyDown(keyCode, msg);
     }
 
-    /**
-     * Sets the TextView that will be used to give information (such as "Game
-     * Over" to the user.
-     * 
-     * @param newView
-     */
-    public void setTextView(TextView newView) {
-        mStatusText = newView;
-    }
 
     /**
      * Updates the current mode of the application (RUNNING or PAUSED or the like)
@@ -298,26 +276,31 @@ public class GridView extends TileView {
         mMode = newMode;
 
         if (newMode == RUNNING & oldMode != RUNNING) {
-            mStatusText.setVisibility(View.INVISIBLE);
             update();
             return;
         }
 
-        Resources res = getContext().getResources();
-        CharSequence str = "";
         if (newMode == PAUSE) {
-            str = res.getText(R.string.mode_pause);
+            final Builder b = new Builder(this.getContext());
+            b.setMessage("Game Paused");
+            b.setNegativeButton("Ready", mUnPauseListener);
+            b.show();
         }
         if (newMode == READY) {
-            str = res.getText(R.string.mode_ready);
+        	final Builder b = new Builder(this.getContext());
+            b.setMessage("Ready for a New Game?");
+            b.setCancelable(false);
+            b.setPositiveButton("Ready", mStartNewGameListener);
+            b.show();
         }
         if (newMode == GAMEOVER) {
-            str = res.getString(R.string.mode_gameover_prefix) + "???"
-                  + res.getString(R.string.mode_gameover_suffix);
+        	final Builder b = new Builder(this.getContext());
+            b.setMessage("Congratulations!  Ready for a New Game?");
+            b.setCancelable(false);
+            b.setPositiveButton("Ready", mStartNewGameListener);
+            b.show();
         }
 
-        mStatusText.setText(str);
-        mStatusText.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -345,12 +328,7 @@ public class GridView extends TileView {
     	for (int x = 0; x < mXTileCount; x++) {
     		for (int y = 0; y < mYTileCount; y++) {
     			setBackgroundTile(NO_TILE, x, y);
-    			try {
-					setTile(mPipeType[x][y] + (mPipeHappy[x][y] ? HAPPY_OFFSET : 0), x, y);
-				} catch (AnimationProgressException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+    			setTile(mPipeType[x][y] + (mPipeHappy[x][y] ? HAPPY_OFFSET : 0), x, y);
     		}
     	}
 		setBackgroundTile(CURSOR_IMAGE, mCursor.x, mCursor.y);
@@ -409,13 +387,14 @@ public class GridView extends TileView {
     	int yy = mYTileCount;
     	int aa = xx * yy;
     	
+    	
     	mPipeType = new int[xx][yy];
     	
     	// Using Kruskal's algorithm to create the tree.
-    	HashSet edges[] = new HashSet[aa];
+    	ArrayList<HashSet<Integer>> edges = new ArrayList<HashSet<Integer>>();
     	int temp[] = new int[aa];
     	for (int t = 0; t < aa; t++) {
-    		edges[t] = new HashSet<Integer>();
+    		edges.add(new HashSet<Integer>());
     		temp[t] = t;
     	}
     	int num_trees = aa;
@@ -444,25 +423,26 @@ public class GridView extends TileView {
     		int val1 = node1; while (val1 != temp[val1]) val1 = temp[val1];
     		int val2 = node2; while (val2 != temp[val2]) val2 = temp[val2];
     		if (val1 != val2) {
-    			edges[node1].add(node2);
-    			edges[node2].add(node1);
+    			edges.get(node1).add(node2);
+    			edges.get(node2).add(node1);
     			num_trees--;
     			temp[val1] = val2;
     		}
     	}
+    	    	
     	// END of Kruskal's algorithm
     	for (int x = 0; x < xx; x++) {
     		for (int y = 0; y < yy; y++) {
     			int pos = y * xx + x;
     			mPipeType[x][y] = 0;
-    			if (edges[pos].contains(pos - 1)) mPipeType[x][y] += 8;
-    			if (edges[pos].contains(pos + xx)) mPipeType[x][y] += 4;
-    			if (edges[pos].contains(pos + 1)) mPipeType[x][y] += 2;
-    			if (edges[pos].contains(pos - xx)) mPipeType[x][y] += 1;
-    			if (edges[pos].contains(pos + xx - 1)) mPipeType[x][y] += 8;
-    			if (edges[pos].contains(pos + xx - aa)) mPipeType[x][y] += 4;
-    			if (edges[pos].contains(pos - xx + 1)) mPipeType[x][y] += 2;
-    			if (edges[pos].contains(pos - xx - aa)) mPipeType[x][y] += 1;
+    			if (edges.get(pos).contains(pos - 1)) mPipeType[x][y] += 8;
+    			if (edges.get(pos).contains(pos + xx)) mPipeType[x][y] += 4;
+    			if (edges.get(pos).contains(pos + 1)) mPipeType[x][y] += 2;
+    			if (edges.get(pos).contains(pos - xx)) mPipeType[x][y] += 1;
+    			if (edges.get(pos).contains(pos + xx - 1)) mPipeType[x][y] += 8;
+    			if (edges.get(pos).contains(pos + xx - aa)) mPipeType[x][y] += 4;
+    			if (edges.get(pos).contains(pos - xx + 1)) mPipeType[x][y] += 2;
+    			if (edges.get(pos).contains(pos - xx - aa)) mPipeType[x][y] += 1;
     			int spin = RNG.nextInt(4);
     			for (int j=0; j<spin; ++j) {
     				mPipeType[x][y] = rotate(mPipeType[x][y]);
@@ -472,6 +452,7 @@ public class GridView extends TileView {
     	
     	mStarter = new Coordinate(RNG.nextInt(xx), RNG.nextInt(yy));
     	calculateHappiness();
+    	
     }
     
     /**
@@ -484,13 +465,32 @@ public class GridView extends TileView {
     	return ((new_value < 16) ? new_value : (new_value - 15));
     }
     
+	protected class Assigner implements RotationCompletedListener {
+		private int mX, mY;
+		Assigner(int x, int y) {
+			mX = x;
+			mY = y;
+		}
+		synchronized public void rotationCompleted(int numRotations) {
+			int value = mPipeType[mX][mY];
+			for (int i=0; i<numRotations; i++)
+				value = rotate(value);
+			mPipeType[mX][mY] = value;
+			setTile(value, mX, mY);
+           	calculateHappiness();
+			updateGrid();
+           	if (mHappyCount == mXTileCount * mYTileCount) {
+           		setMode(GAMEOVER);
+           	}
+	    }
+	}
+    
     /**
      * Rotates the object at the current cursor location.
      */
     private void rotatePipeAtCursor() {
-    	int newType = rotate(mPipeType[mCursor.x][mCursor.y]);
-    	rotateTile(newType, mCursor.x, mCursor.y);
-    	mPipeType[mCursor.x][mCursor.y] = newType;
+    	Assigner r = new Assigner(mCursor.x, mCursor.y);
+    	rotateTile(mCursor.x, mCursor.y, r);
     }
     
     private void testWest(int x1, int y1, int x2, int y2) {
@@ -556,7 +556,15 @@ public class GridView extends TileView {
     	mHappyCount = 0;
     	mPipeHappy = new boolean[mXTileCount][mYTileCount];
     	recurseHappiness(mStarter.x, mStarter.y);
-    }    
+    }
+
+	public GameState getGameState() {
+		return mGameState;
+	}
+
+	public void setGameState(GameState gameState) {
+		mGameState = gameState;
+	}    
     
     
 }
