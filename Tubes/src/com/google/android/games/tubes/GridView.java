@@ -30,7 +30,7 @@ import android.app.AlertDialog.Builder;
  */
 public class GridView extends TileView {
 
-	private GameState mGameState;
+	private GameSettings mGameState;
 	
     /**
      * Current mode of application: READY to run, RUNNING, or you have already
@@ -180,10 +180,10 @@ public class GridView extends TileView {
         
     }
     
-    public void initNewGame(GameState gs) {
+    public void initNewGame(GameSettings gs) {
     	clearTiles();
     	mGameState = gs;
-    	initializeGrid(mGameState.getWidth(),mGameState.getHeight());
+		initializeGrid(mGameState.getWidth(),mGameState.getHeight());
     	mCursor = new Coordinate(0,0);
     	resetPuzzleData();
         setMode(RUNNING);
@@ -558,11 +558,11 @@ public class GridView extends TileView {
     	recurseHappiness(mStarter.x, mStarter.y);
     }
 
-	public GameState getGameState() {
+	public GameSettings getGameState() {
 		return mGameState;
 	}
 
-	public void setGameState(GameState gameState) {
+	public void setGameState(GameSettings gameState) {
 		mGameState = gameState;
 	}    
     
