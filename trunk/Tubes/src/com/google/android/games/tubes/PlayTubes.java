@@ -73,8 +73,9 @@ public class PlayTubes extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(Item item) {
 		if (item == mNewGame) {
-   		 	new NewGameDialog(this, mGameState, mGridView).show();		
-			return true;
+   		 	new NewGameDialog(this, mGameState, mGridView).show();
+   		 	mGridView.requestFocus();
+			return false;
 		} else {
 			return super.onOptionsItemSelected(item);
 		}

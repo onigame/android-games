@@ -45,6 +45,9 @@ public class TileView extends ViewGroup {
 
     protected static int mXTileCount;
     protected static int mYTileCount;
+    
+    protected int mWidth;
+    protected int mHeight;
 
 
     /**
@@ -152,7 +155,6 @@ public class TileView extends ViewGroup {
      * @param tileindex
      * @param x
      * @param y
-     * @throws AnimationProgressException 
      */
     public void setTile(int tileindex, int x, int y) {
     	this.mChildrenViews[x][y].setForeground(mTileArray[tileindex]);
@@ -192,10 +194,10 @@ public class TileView extends ViewGroup {
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    	int height = bottom - top;
-    	int width = right - left;
-    	int startX = ((width - mXTileCount * mTileSize) / 2);
-    	int startY = ((height - mYTileCount * mTileSize) / 2);
+    	mHeight = bottom - top;
+    	mWidth = right - left;
+    	int startX = ((mWidth - mXTileCount * mTileSize) / 2);
+    	int startY = ((mHeight - mYTileCount * mTileSize) / 2);
     	
     	for (int y=0; y<mYTileCount; ++y) {
             for (int x=0; x<mXTileCount; ++x) {
@@ -207,6 +209,20 @@ public class TileView extends ViewGroup {
             }
         }    	
 	}
+	
+    protected int getXindex(int x) {
+      int result = (x - ((mWidth - mXTileCount * mTileSize) / 2)) / mTileSize;
+      if (result < 0) return 0;
+      if (result >= mXTileCount) return mXTileCount-1;
+      return result;
+    }
+
+    protected int getYindex(int y) {
+      int result = (y - ((mHeight - mYTileCount * mTileSize) / 2)) / mTileSize;
+      if (result < 0) return 0;
+      if (result >= mYTileCount) return mYTileCount-1;
+      return result;
+    }
 
 	protected void rotateTile(int x, int y, RotationCompletedListener r) {
 		this.mChildrenViews[x][y].rotateClockwise(r);

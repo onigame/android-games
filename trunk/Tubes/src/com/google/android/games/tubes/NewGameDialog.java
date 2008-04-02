@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import com.google.android.games.tubes.R;
 
 /**
  * @author whuang
@@ -27,15 +28,6 @@ public class NewGameDialog extends Dialog {
 	private View.OnClickListener mCancelListener = new View.OnClickListener() {
 		public void onClick(View v) {
 			cancel();
-			View vv = getCurrentFocus();
-			boolean b = mGridView.requestFocus();
-			View vw = getCurrentFocus();
-			android.util.Log.i("tag", "hello world");
-			android.util.Log.i("tag", vv.toString());
-			android.util.Log.i("tag", vw.toString());
-			android.util.Log.i("tag", b ? "true" : "false");
-			v = vv;
-			v = vw;
 		}
 	};
 	
