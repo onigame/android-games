@@ -15,7 +15,7 @@ public class PlayTubes extends Activity {
     private Item mOptions;
     private Item mNewGame;
     
-    private GameState mGameState;
+    private GameSettings mGameState;
     
     /** Called when the activity is first created.
      * Turns off the title bar, sets up the content views,
@@ -34,7 +34,7 @@ public class PlayTubes extends Activity {
 
         if (icicle == null) {
             // We were just launched -- set up a new game
-        	mGameState = new GameState();
+        	mGameState = new GameSettings();
         	new NewGameDialog(this, mGameState, mGridView).show();
         } else {
             // We are being restored
@@ -52,8 +52,8 @@ public class PlayTubes extends Activity {
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
-        mOptions = menu.add(0, INSERT_ID, "New Game...");
-        mNewGame = menu.add(1, INSERT_ID, "Options...");
+        mNewGame = menu.add(0, INSERT_ID, "New Game...");
+        mOptions = menu.add(1, INSERT_ID, "Options...");
         return result;
     }
     
@@ -72,7 +72,7 @@ public class PlayTubes extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(Item item) {
-		if (item == mOptions) {
+		if (item == mNewGame) {
    		 	new NewGameDialog(this, mGameState, mGridView).show();		
 			return true;
 		} else {
