@@ -11,6 +11,8 @@ import java.util.Random;
 import java.util.HashSet;
 import java.util.ArrayList;
 
+import com.google.android.games.tubes.GameSettings;
+
 import com.google.android.games.tubes.SingleTileView.RotationCompletedListener;
 
 import android.content.Context;
@@ -22,6 +24,7 @@ import android.util.AttributeSet;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.app.AlertDialog.Builder;
+import android.view.MotionEvent;
 
 /**
  * GridView: implementation of a simple game of Series of Tubes
@@ -125,7 +128,7 @@ public class GridView extends TileView {
         	this.removeMessages(0);
             sendMessageDelayed(obtainMessage(0), delayMillis);
         }
-    };
+    }
     
     /**
      * Constructs a GridView based on inflation from XML
@@ -263,6 +266,22 @@ public class GridView extends TileView {
 
         return super.onKeyDown(keyCode, msg);
     }
+    
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Coordinate location = new Coordinate(getXindex((int)event.getX()), getYindex((int)event.getY()));
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            this.mCursor = location;
+            return (true);
+        } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+            this.mCursor = location;
+            return (true);
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            rotatePipeAtCursor();
+            return (true);           
+        }
+        return super.onTouchEvent(event);
+    }
 
 
     /**
@@ -348,7 +367,7 @@ public class GridView extends TileView {
             x = newX;
             y = newY;
         }
-        
+             
         public void move(int direction) {
         	if (direction == GridView.NORTH) {
         		y--;
