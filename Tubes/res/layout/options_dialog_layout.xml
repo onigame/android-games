@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+ * Copyright (C) 2007 Google Inc.
+ *
+ * Author: Wei-Hwa Huang
+ -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	
+    <TextView android:id="@+id/label_height" 
+              android:layout_width="wrap_content" 
+              android:layout_height="wrap_content" 
+              android:text="Height:"/>
+
+    <EditText android:id="@+id/height" 
+              android:layout_width="wrap_content" 
+              android:layout_height="wrap_content" 
+              android:background="@android:drawable/editbox_background"
+              android:layout_toRight="@id/label_height"/>
+
+    <TextView android:id="@+id/label_width" 
+              android:layout_marginLeft="10px"
+              android:layout_width="wrap_content" 
+              android:layout_height="wrap_content" 
+              android:layout_toRight="@id/height"
+              android:text="Width:"/>
+
+    <EditText android:id="@+id/width" 
+              android:layout_width="wrap_content" 
+              android:layout_height="wrap_content" 
+              android:layout_alignParentRight="true"
+              android:background="@android:drawable/editbox_background"
+              android:layout_toRight="@id/label_width"/>
+	
+    <Button android:id="@+id/ok" 
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content" 
+            android:layout_below="@id/width"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="10px"
+            android:text="OK" />
+
+    <Button android:id="@+id/cancel"
+    		android:layout_width="wrap_content" 
+            android:layout_height="wrap_content"
+            android:layout_toLeft="@id/ok"
+            android:layout_alignTop="@id/ok"
+            android:text="Cancel" />
+
+</RelativeLayout>
