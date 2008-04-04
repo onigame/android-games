@@ -3,12 +3,14 @@ package com.google.android.games.tubes;
 public class GameSettings {
 	private int mGridHeight;
 	private int mGridWidth;
-	private long mPuzzleID;  // used as seed for Random number generator
+	private int mPuzzleID;  // used as seed for Random number generator
+	
+	public final static int MAX_PUZZLE_ID = 100000;
 	
 	public GameSettings() {
-		mGridHeight = 7;
-		mGridWidth = 7;
-		mPuzzleID = 1;
+		mGridHeight = 3;
+		mGridWidth = 3;
+		mPuzzleID = 0;
 	}
 
 	public int getHeight() {
@@ -27,11 +29,18 @@ public class GameSettings {
 		mGridWidth = gridWidth;
 	}
 
-	public long getPuzzleID() {
+	public int getPuzzleID() {
 		return mPuzzleID;
 	}
 
-	public void setPuzzleID(long puzzleID) {
+	public void setPuzzleID(int puzzleID) {
 		mPuzzleID = puzzleID;
 	}
+
+  public void nextPuzzle() {
+    mPuzzleID++;
+    if (mPuzzleID >= MAX_PUZZLE_ID) {
+      mPuzzleID = 0;
+    }
+  }
 }

@@ -17,14 +17,17 @@ import com.google.android.games.tubes.SingleTileView.RotationCompletedListener;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.View;
 import android.app.AlertDialog.Builder;
 import android.view.MotionEvent;
+import android.widget.TextView;
 
 /**
  * GridView: implementation of a simple game of Series of Tubes
@@ -34,6 +37,10 @@ import android.view.MotionEvent;
 public class GridView extends TileView {
 
 	private GameSettings mGameState;
+	
+	private View mTopView;
+	
+	private int mMoveCount;
 	
     /**
      * Current mode of application: READY to run, RUNNING, or you have already
@@ -185,12 +192,22 @@ public class GridView extends TileView {
     
     public void initNewGame(GameSettings gs) {
     	clearTiles();
+    	mMoveCount = 0;
     	mGameState = gs;
 		initializeGrid(mGameState.getWidth(),mGameState.getHeight());
     	mCursor = new Coordinate(0,0);
-    	resetPuzzleData();
-        setMode(RUNNING);
+    	resetPuzzleData(gs.getPuzzleID());
+    	String s = "Puzzle ID: " + new Integer(gs.getPuzzleID()).toString();
+    	TextView t = (TextView) mTopView.findViewById(R.id.puzzle_id);
+    	t.setText(s);
+    	setMode(RUNNING);
         update();    		    	
+    }
+    
+    public void updateMoveCount() {
+      String s = "Moves: " + new Integer(mMoveCount).toString();
+      TextView t = (TextView) mTopView.findViewById(R.id.move_count);
+      t.setText(s);      
     }
 
     /**
@@ -216,6 +233,7 @@ public class GridView extends TileView {
     
     public DialogInterface.OnClickListener mStartNewGameListener = new DialogInterface.OnClickListener() {
 		public void onClick(DialogInterface arg0, int arg1) {
+		    mGameState.nextPuzzle();
             initNewGame(mGameState);
 		}
     };
@@ -314,6 +332,9 @@ public class GridView extends TileView {
         }
         if (newMode == GAMEOVER) {
         	final Builder b = new Builder(this.getContext());
+        	Intent i = new Intent(Intent.INSERT_ACTION);
+        	i.setClass(this.getContext(), ScoresActivity.class);
+        	this.getContext().startActivity(i);
             b.setMessage("Congratulations!  Ready for a New Game?");
             b.setCancelable(false);
             b.setPositiveButton("Ready", mStartNewGameListener);
@@ -401,7 +422,8 @@ public class GridView extends TileView {
      * Creates a puzzle.
      * 
      */
-    private void resetPuzzleData() {
+    private void resetPuzzleData(long seed) {
+        RNG.setSeed(seed);
     	int xx = mXTileCount;
     	int yy = mYTileCount;
     	int aa = xx * yy;
@@ -508,6 +530,8 @@ public class GridView extends TileView {
      * Rotates the object at the current cursor location.
      */
     private void rotatePipeAtCursor() {
+        mMoveCount++;
+        updateMoveCount();
     	Assigner r = new Assigner(mCursor.x, mCursor.y);
     	rotateTile(mCursor.x, mCursor.y, r);
     }
@@ -583,7 +607,15 @@ public class GridView extends TileView {
 
 	public void setGameState(GameSettings gameState) {
 		mGameState = gameState;
-	}    
+	}
+
+  public View getTopView() {
+    return mTopView;
+  }
+
+  public void setTopView(View topView) {
+    mTopView = topView;
+  }    
     
     
 }

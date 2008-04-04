@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import com.google.android.games.tubes.R;
 
+import java.util.Random;
+
 /**
  * @author whuang
  *
@@ -20,6 +22,7 @@ public class NewGameDialog extends Dialog {
 	
 	private EditText mHeight;
 	private EditText mWidth;
+	private EditText mPuzzleIdBox;
 	private Button mCancelButton;
 	private Button mOkButton;
 	private GameSettings mGameState;
@@ -46,29 +49,46 @@ public class NewGameDialog extends Dialog {
 					throw new NumberFormatException();
 				String newWidthS = mWidth.getText().toString();
 				Integer newWidthI = Integer.parseInt(newWidthS);
-				if (!newWidthI.toString().equals(newWidthS))
-					throw new NumberFormatException();
+                if (!newWidthI.toString().equals(newWidthS))
+                  throw new NumberFormatException();
+				String newPuzzleIdS = mPuzzleIdBox.getText().toString();
+				Integer newPuzzleIdI;
+				if (newPuzzleIdS.equals("")) {
+				  newPuzzleIdI = mGameState.getPuzzleID();
+				} else {
+	              newPuzzleIdI = Integer.parseInt(newPuzzleIdS);
+				  if (!newPuzzleIdI.toString().equals(newPuzzleIdS)) {
+                    throw new NumberFormatException();
+				  }
+				}
+		
 				if (newHeightI.intValue() < MIN)
 					throw new IllegalArgumentException();
 				if (newHeightI.intValue() > MAX)
 					throw new IllegalArgumentException();
-				if (newWidthI.intValue() < MIN)
-					throw new IllegalArgumentException();
-				if (newWidthI.intValue() > MAX)
-					throw new IllegalArgumentException();
+                if (newWidthI.intValue() < MIN)
+                  throw new IllegalArgumentException();
+                if (newWidthI.intValue() > MAX)
+                  throw new IllegalArgumentException();
+                if (newPuzzleIdI.intValue() < 0)
+                  throw new IllegalArgumentException();
+                if (newPuzzleIdI.intValue() >= GameSettings.MAX_PUZZLE_ID)
+                  throw new IllegalArgumentException();
 				mGameState.setHeight(newHeightI.intValue());
 				mGameState.setWidth(newWidthI.intValue());
+				mGameState.setPuzzleID(newPuzzleIdI.intValue());
 				dismiss();
 				mGridView.initNewGame(mGameState);
 			} catch (NumberFormatException e) {
 	        	final Builder b = new Builder(getContext());
-	            b.setMessage("Height and Width must be integers.");
+	            b.setMessage("Values must be integers.");
 	            b.setCancelable(true);
 	            b.setNeutralButton("OK", mDialogDismiss);
 	            b.show();
 			} catch (IllegalArgumentException e) {
 	        	final Builder b = new Builder(getContext());
-	            b.setMessage("Height and Width must be in the range " + MIN + "-" + MAX + ".");
+	            b.setMessage("Height and Width must be in the range " + MIN + "-" + MAX
+	                + ".  Puzzle ID must be in the range 0-" + GameSettings.MAX_PUZZLE_ID + ".");
 	            b.setCancelable(true);
 	            b.setNeutralButton("OK", mDialogDismiss);
 	            b.show();
@@ -88,6 +108,10 @@ public class NewGameDialog extends Dialog {
 		mHeight.setText(new Integer(mGameState.getHeight()).toString());
 		mWidth = (EditText) findViewById(R.id.width);
 		mWidth.setText(new Integer(mGameState.getWidth()).toString());
+		
+		mGameState.setPuzzleID(new Random().nextInt(GameSettings.MAX_PUZZLE_ID));
+		mPuzzleIdBox = (EditText) findViewById(R.id.puzzle_id_box);
+		mPuzzleIdBox.setHint(new Long(mGameState.getPuzzleID()).toString());
 		
 		mCancelButton = (Button) findViewById(R.id.cancel);
 		mCancelButton.setOnClickListener(mCancelListener);

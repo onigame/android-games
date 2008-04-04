@@ -50,18 +50,21 @@ public final class R {
         public static final int yellowstar=0x7f020024;
     }
     public static final class id {
-        public static final int cancel=0x7f050006;
-        public static final int grid=0x7f050000;
-        public static final int height=0x7f050002;
-        public static final int label_height=0x7f050001;
-        public static final int label_width=0x7f050003;
-        public static final int ok=0x7f050005;
-        public static final int width=0x7f050004;
+        public static final int cancel=0x7f050008;
+        public static final int grid=0x7f050003;
+        public static final int height=0x7f050004;
+        public static final int move_count=0x7f050002;
+        public static final int ok=0x7f050007;
+        public static final int puzzle_id=0x7f050001;
+        public static final int puzzle_id_box=0x7f050006;
+        public static final int something=0x7f050009;
+        public static final int top_view=0x7f050000;
+        public static final int width=0x7f050005;
     }
     public static final class layout {
         public static final int grid_layout=0x7f030000;
-        public static final int main=0x7f030001;
-        public static final int options_dialog_layout=0x7f030002;
+        public static final int options_dialog_layout=0x7f030001;
+        public static final int scores=0x7f030002;
     }
     public static final class string {
         public static final int app_name=0x7f040000;
