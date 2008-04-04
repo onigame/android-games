@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.android.games.tubes.ScoreList;
+
 public class ScoresActivity extends Activity {
   private static final String TAG = "ScoresActivity";
   
