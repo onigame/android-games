@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import com.google.android.games.tubes.R;
+import com.google.android.games.tubes.GameSettings;
 
 import java.util.Random;
 
