@@ -32,6 +32,7 @@ public class PlayTubes extends Activity {
 
         mGridView = (GridView) findViewById(R.id.grid);
         mGridView.setTopView(findViewById(R.id.top_view));
+        mGridView.setMaster(this);
 
         if (icicle == null) {
             // We were just launched -- set up a new game

@@ -8,6 +8,7 @@ import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import com.google.android.games.tubes.R;
@@ -104,6 +105,7 @@ public class NewGameDialog extends Dialog {
         setContentView(R.layout.options_dialog_layout);
         setTitle("New Game");
 		setCancelable(true);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND, WindowManager.LayoutParams.FLAG_BLUR_BEHIND);  // TODO: don't know if this works
 		
 		mHeight = (EditText) findViewById(R.id.height);
 		mHeight.setText(new Integer(mGameState.getHeight()).toString());

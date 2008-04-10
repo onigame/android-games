@@ -6,7 +6,7 @@ import android.provider.BaseColumns;
 public final class ScoreList {
   public static final class ScoreColumns implements BaseColumns {
     public static final Uri CONTENT_URI
-            = Uri.parse("content://com.google.android.games.tubes.ScoreList/scores");
+            = Uri.parse("content://com.google.android.games.tubes.scorelist/scores");
 
     public static final String DEFAULT_SORT_ORDER = "modified DESC";
 
