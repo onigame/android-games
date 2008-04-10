@@ -22,9 +22,11 @@ import android.content.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.app.Activity;
 import android.app.AlertDialog.Builder;
 import android.view.MotionEvent;
 import android.widget.TextView;
@@ -39,6 +41,7 @@ public class GridView extends TileView {
 	private GameSettings mGameState;
 	
 	private View mTopView;
+	private Activity mMaster;
 	
 	private int mMoveCount;
 	
@@ -331,10 +334,14 @@ public class GridView extends TileView {
             b.show();
         }
         if (newMode == GAMEOVER) {
+            Log.e("33", "FTesting ");
         	final Builder b = new Builder(this.getContext());
+            Log.e("33", "FTesting ");
         	Intent i = new Intent(Intent.INSERT_ACTION);
         	i.setClass(this.getContext(), ScoresActivity.class);
-        	this.getContext().startActivity(i);
+        	Log.e("33", "FTesting ");
+        	mMaster.startSubActivity(i, 1);
+            Log.e("33", "FTesting ");
             b.setMessage("Congratulations!  Ready for a New Game?");
             b.setCancelable(false);
             b.setPositiveButton("Ready", mStartNewGameListener);
@@ -615,6 +622,14 @@ public class GridView extends TileView {
 
   public void setTopView(View topView) {
     mTopView = topView;
+  }
+
+  public Activity getMaster() {
+    return mMaster;
+  }
+
+  public void setMaster(Activity master) {
+    mMaster = master;
   }    
     
     
