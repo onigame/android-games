@@ -321,10 +321,12 @@ public class GridView extends TileView {
         }
 
         if (newMode == PAUSE) {
-            final Builder b = new Builder(this.getContext());
+/*            final Builder b = new Builder(this.getContext());
             b.setMessage("Game Paused");
             b.setNegativeButton("Ready", mUnPauseListener);
             b.show();
+            */
+            Log.e("GridView", "Don't do anything when paused");
         }
         if (newMode == READY) {
         	final Builder b = new Builder(this.getContext());
@@ -334,14 +336,14 @@ public class GridView extends TileView {
             b.show();
         }
         if (newMode == GAMEOVER) {
-            Log.e("33", "FTesting ");
         	final Builder b = new Builder(this.getContext());
-            Log.e("33", "FTesting ");
+        	Bundle bundle = new Bundle();
+            bundle.putString(ScoreList.ScoreColumns.PUZZLE_ID, new Integer(mGameState.getPuzzleID()).toString());
+            bundle.putString(ScoreList.ScoreColumns.SCORE, new Integer(mMoveCount).toString());
         	Intent i = new Intent(Intent.INSERT_ACTION);
-        	i.setClass(this.getContext(), ScoresActivity.class);
-        	Log.e("33", "FTesting ");
+        	i.putExtras(bundle);
+        	i.setClass(this.getContext(), HighScoresList.class);
         	mMaster.startSubActivity(i, 1);
-            Log.e("33", "FTesting ");
             b.setMessage("Congratulations!  Ready for a New Game?");
             b.setCancelable(false);
             b.setPositiveButton("Ready", mStartNewGameListener);

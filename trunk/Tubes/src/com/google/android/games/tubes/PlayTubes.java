@@ -2,6 +2,7 @@ package com.google.android.games.tubes;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.Menu.Item;
 import android.view.Window;
@@ -78,6 +79,9 @@ public class PlayTubes extends Activity {
    		 	new NewGameDialog(this, mGameState, mGridView).show();
    		 	mGridView.requestFocus();
 			return false;
+		} else if (item == mOptions) {
+		    Log.e("PlayTubes", "Not handling options yet...");
+		    return false;
 		} else {
 			return super.onOptionsItemSelected(item);
 		}
