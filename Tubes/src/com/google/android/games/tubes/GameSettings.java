@@ -8,8 +8,8 @@ public class GameSettings {
 	public final static int MAX_PUZZLE_ID = 100000;
 	
 	public GameSettings() {
-		mGridHeight = 3;
-		mGridWidth = 3;
+		mGridHeight = 5;
+		mGridWidth = 5;
 		mPuzzleID = 0;
 	}
 
